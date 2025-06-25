@@ -32,13 +32,9 @@ def index():
     with connect_db() as client:
         # Get all the things from the DB
         sql = """
-            SELECT *,
-                   users.id AS manager
-
+            SELECT code, name
             FROM teams
-            JOIN users ON teams.manager = users.id
-
-            ORDER BY things.name ASC
+            ORDER BY name ASC
         """
         params=[]
         result = client.execute(sql, params)
@@ -84,30 +80,33 @@ def show_all_things():
 #-----------------------------------------------------------
 # Thing page route - Show details of a single thing
 #-----------------------------------------------------------
-@app.get("/thing/<int:id>")
-def show_one_thing(id):
+@app.get("/team/<code>")
+def show_one_team(code):
     with connect_db() as client:
-        # Get the thing details from the DB, including the owner info
-        sql = """
-            SELECT things.id,
-                   things.name,
-                   things.price,
-                   things.user_id,
-                   users.name AS owner
+        # Get the team details from the DB, including the owner info
+        sql1= """
+            SELECT teams.code,
+                   teams.name,
+                   teams.description,
+                   teams.manager
 
-            FROM things
-            JOIN users ON things.user_id = users.id
+            FROM teams
+            JOIN users ON teams.manager = users.id
 
-            WHERE things.id=?
+            WHERE teams.code=?
         """
-        params = [id]
-        result = client.execute(sql, params)
+        params = [code]
+        result1 = client.execute(sql1, params)
+
+        sql2= "SELECT * FROM players"
+        result2 = client.execute(sql2)
 
         # Did we get a result?
         if result.rows:
             # yes, so show it on the page
-            thing = result.rows[0]
-            return render_template("pages/thing.jinja", thing=thing)
+            team = result1.rows[0]
+            players = result2
+            return render_template("pages/team.jinja", team=team, players=players)
 
         else:
             # No, so show error
@@ -115,15 +114,16 @@ def show_one_thing(id):
 
 
 #-----------------------------------------------------------
-# Route for adding a thing, using data posted from a form
+# Route for adding a team, using data posted from a form
 # - Restricted to logged in users
 #-----------------------------------------------------------
 @app.post("/add")
 @login_required
 def add_a_thing():
     # Get the data from the form
-    name  = request.form.get("name")
-    price = request.form.get("price")
+    code  = request.form.get("code")
+    name = request.form.get("name")
+    description = request.form.get("description")
 
     # Sanitise the text inputs
     name = html.escape(name)
@@ -133,13 +133,13 @@ def add_a_thing():
 
     with connect_db() as client:
         # Add the thing to the DB
-        sql = "INSERT INTO things (name, price, user_id) VALUES (?, ?, ?)"
-        params = [name, price, user_id]
+        sql = "INSERT INTO teams (code, name, description, manager) VALUES (?, ?, ?, ?)"
+        params = [code, name, description, session["user_id"]]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Thing '{name}' added", "success")
-        return redirect("/things")
+        flash(f"Team '{name}' added", "success")
+        return redirect("/")
 
 
 #-----------------------------------------------------------

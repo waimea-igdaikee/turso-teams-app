@@ -9,38 +9,46 @@
 
 {% block title %}
 
-    Flask Demo - Single Thing
+    {{ team.name }}
 
 {% endblock %}
 
 
 {% block content %}
 
-    <h1>A Single Thing...</h1>
+    <h1>{{ team.name }} team</h1>
 
 
     <article>
 
         <header>
-            <h3>{{ thing.name }}</h3>
+            <h3>{{ team.name }}</h3>
         </header>
 
-        <p>Price: <strong>${{ thing.price }}</strong></p>
+        <p>Code: <strong>{{ team.code }}</strong></p>
+        <p>Description: <strong>{{ team.description }}</strong></p>
 
         <footer>
 
             {# Only show delete link if logged in AND owner #}
-            {% if session.user_id and (thing.user_id == session.user_id) %}
+            {% if session.user_id and (team.manager == session.user_id) %}
 
-                <a href="/delete/{{ thing.id }}" onclick="return confirm('Really delete?');">Delete</a>
+                <a href="/delete/{{ team.code }}" onclick="return confirm('Really delete?');">Delete</a>
 
             {% else %}
 
-                Owner: <strong>{{ thing.owner }}</strong>
+                manager: <strong>{{ team.manager }}</strong>
 
             {% endif %}
 
         </footer>
+
+    </article>
+
+    <article>
+    
+        <h1>Add players</h1>
+        
 
     </article>
 

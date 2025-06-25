@@ -10,12 +10,60 @@
 
 {% block title %}
 
-    Flask Demo
+  Flask Demo
 
 {% endblock %}
 
 
 {% block content %}
+
+  <h1> Team list </h1>
+
+    <article>
+        <ul>
+            {% for team in teams %}
+                <li>
+                  <a href="team/{{team.code}}">{{team.code}}</a>
+                  <p>{{team.name}}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </article>
+
+{# New team adder if user signed in #}
+  {% if session.user_id %}
+    <article>
+      <h1>New Team</h1>
+
+      <form action="/add" method="POST" id="team-form">
+
+              <input
+                  type="text"
+                  name="code"
+                  placeholder="Team Code"
+                  required
+              >
+
+              <input
+                  type="text"
+                  name="name"
+                  placeholder="Team Name"
+                  required
+              >
+
+              <input
+                  type="text"
+                  name="description"
+                  placeholder="Team Description"
+                  required
+              >
+
+              <button>Add Team</button>
+
+          </form>
+
+    </article>
+  {% endif %}
 
 
 {% endblock %}
